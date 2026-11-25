@@ -1,0 +1,215 @@
+/* Ruleta de Becas ISC UTP — diseño oscuro único, pensado para proyector. */
+:root{
+  --ink:#120638;
+  --stage:#1e0b5c;
+  --violet:#5a1ae2;
+  --violet-2:#7c4dff;
+  --gold:#e8ac54;
+  --gold-soft:#f6d9a8;
+  --paper:#ffffff;
+  --mute:#b7acdf;
+  --line:rgba(255,255,255,.14);
+  --warn:#ff8a7a;
+  --f-display:"Poppins",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--paper)}
+body{font-family:var(--f-display);font-size:15px;padding:18px 16px 40px;overflow-x:hidden}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+/* ---------- Botones: hover, presionado, deshabilitado, foco ---------- */
+button{font-family:inherit;cursor:pointer;border-radius:12px;font-weight:600;font-size:15px;padding:12px 18px;color:var(--paper);background:rgba(255,255,255,.08);border:1px solid var(--line);
+  transition:background-color .15s ease,border-color .15s ease,box-shadow .2s ease,transform .1s ease,color .15s ease;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:hover:not(:disabled){background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3)}
+button:active:not(:disabled){transform:translateY(1px) scale(.97);background:rgba(255,255,255,.2)}
+button:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.go{background:linear-gradient(180deg,#ffd98a,var(--gold));color:var(--ink);border:0;font-size:20px;font-weight:800;padding:16px 38px;border-radius:999px;box-shadow:0 6px 0 #c98a35,0 14px 30px rgba(232,172,84,.35)}
+.go:hover:not(:disabled){background:linear-gradient(180deg,#ffe6b0,var(--gold-soft));box-shadow:0 8px 0 #c98a35,0 18px 38px rgba(232,172,84,.5);transform:translateY(-2px)}
+.go:active:not(:disabled){background:linear-gradient(180deg,#f3bd62,#e0a24a);transform:translateY(4px);box-shadow:0 2px 0 #c98a35,0 6px 14px rgba(232,172,84,.35)}
+.go:focus-visible{outline-color:var(--paper)}
+.go:disabled{box-shadow:none}
+.ghost{font-size:14px;border-radius:999px;padding:13px 22px}
+
+/* ---------- Escenario ---------- */
+.stage{position:relative;overflow:hidden;border-radius:26px;background:
+  radial-gradient(circle at 8% 22%,rgba(255,227,168,.55) 0 2px,transparent 3px),
+  radial-gradient(circle at 46% 9%,rgba(255,255,255,.5) 0 2px,transparent 3px),
+  radial-gradient(circle at 93% 30%,rgba(255,227,168,.5) 0 3px,transparent 4px),
+  radial-gradient(circle at 60% 92%,rgba(255,255,255,.4) 0 2px,transparent 3px),
+  radial-gradient(circle at 30% 96%,rgba(255,227,168,.45) 0 2px,transparent 3px),
+  radial-gradient(circle at 97% 84%,rgba(255,255,255,.35) 0 2px,transparent 3px),
+  radial-gradient(circle at 88% 0%,rgba(124,77,255,.55),transparent 45%),
+  radial-gradient(circle at 0% 100%,rgba(232,172,84,.18),transparent 40%),
+  linear-gradient(160deg,var(--violet) 0%,var(--stage) 70%);
+  padding:26px clamp(18px,4vw,48px) 34px;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px 16px;flex-wrap:wrap}
+.top .isc{height:56px;max-width:45%;object-fit:contain}
+.sponsors{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sponsors span{font-size:11px;letter-spacing:.22em;color:var(--gold);font-weight:600;margin-right:4px}
+.chip{background:var(--paper);border-radius:12px;height:58px;padding:0 14px;display:flex;align-items:center}
+.chip img{height:42px;display:block}
+.chip img.ins{height:50px}
+
+.game{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(18px,3vw,40px);align-items:center}
+
+/* ---------- Ruleta ---------- */
+.wheelbox{position:relative;width:min(560px,calc(100% - 64px),calc(100svh - 190px));min-width:min(280px,100%);aspect-ratio:1;margin:0 auto}
+/* El aro metálico y los clavos se dibujan en el canvas. Aquí solo la sombra: la ruleta "flota". */
+.wheelbox canvas{position:relative;z-index:1;width:100%;height:100%;display:block;border-radius:50%;
+  box-shadow:0 26px 50px -10px rgba(0,0,0,.6),0 10px 20px rgba(0,0,0,.3)}
+/* Sombra de contacto, elíptica, debajo de la ruleta */
+.wheelbox::after{content:"";position:absolute;z-index:0;left:14%;right:14%;bottom:-6%;height:9%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(5,0,20,.65),rgba(5,0,20,0) 70%);filter:blur(4px)}
+/* Brillo dorado que pulsa mientras gira */
+.wheelbox::before{content:"";position:absolute;z-index:0;inset:-2px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .4s ease}
+.wheelbox.spinning::before{opacity:1;animation:glow 1.1s ease-in-out infinite}
+@keyframes glow{
+  0%,100%{box-shadow:0 0 22px 4px rgba(232,172,84,.35)}
+  50%{box-shadow:0 0 70px 22px rgba(232,172,84,.75)}
+}
+/* Centro: logo ISC con anillo dorado y resplandor suave */
+.hub{position:absolute;z-index:2;left:50%;top:50%;width:23%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#7c4dff,#5a1ae2 55%,#3d16b3);border:6px solid #fff3d9;display:flex;align-items:center;justify-content:center;padding:14px;
+  box-shadow:0 0 0 5px #f3bd62,0 0 26px 10px rgba(255,214,120,.45),0 8px 18px rgba(30,10,80,.45),inset 0 3px 8px rgba(255,255,255,.3)}
+.hub img{width:100%;display:block}
+/* Flecha a la derecha (0 rad = las 3 en punto), apuntando hacia adentro. Pivota en el remache. */
+.pin{position:absolute;z-index:3;right:-58px;top:50%;width:86px;height:78px;transform:translateY(-50%);transform-origin:70% 50%;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(232,172,84,.35))}
+.pin svg{display:block;width:100%;height:100%;overflow:visible}
+
+/* ---------- Info del premio ---------- */
+.side{display:flex;flex-direction:column;gap:18px;min-width:0;padding-bottom:clamp(24px,7vh,80px)}
+.prize{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;min-width:0}
+.kind{display:inline-block;font-size:13px;letter-spacing:.2em;font-weight:700;padding:6px 14px;border-radius:999px;background:var(--gold);color:var(--ink)}
+.kind.half{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.prize h2{margin:6px 0 0;font-size:clamp(26px,3.6vw,46px);line-height:1.1;text-wrap:balance;font-weight:800;overflow-wrap:anywhere}
+.prize .by{color:var(--mute);font-size:clamp(14px,1.4vw,18px)}
+.prize .count{font-family:var(--f-mono);color:var(--gold-soft);font-size:14px}
+
+/* ---------- Caja del ganador ---------- */
+.reel{--name-max:clamp(30px,3.4vw,48px);--pad:18px;width:100%;min-width:0;flex:none;height:calc(var(--name-max) * 2.16 + var(--pad) * 2 + 4px);border-radius:28px;background:rgba(10,3,40,.5);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;padding:var(--pad);overflow:hidden;
+  transition:border-color .3s ease,box-shadow .4s ease}
+.reel .name{max-width:100%;font-size:var(--name-max);font-weight:800;text-align:center;line-height:1.08;overflow-wrap:anywhere;letter-spacing:-.01em}
+.reel .name.sizing{transition:font-size .4s cubic-bezier(.2,.8,.2,1)}   /* tamaño final del ganador */
+.reel.spin .name{color:var(--paper);opacity:.85}   /* nombre en vivo mientras gira */
+.reel-wrap{position:relative;flex:none}
+.badge{position:absolute;z-index:2;top:-15px;left:50%;transform:translateX(-50%) scale(.4);opacity:0;pointer-events:none;white-space:nowrap;
+  background:linear-gradient(180deg,#ffd98a,var(--gold));color:var(--ink);font-weight:800;font-size:14px;letter-spacing:.04em;padding:5px 16px;border-radius:999px;box-shadow:0 6px 16px rgba(232,172,84,.45);
+  transition:transform .45s cubic-bezier(.2,1.5,.4,1),opacity .25s ease}
+.reel-wrap:has(.reel.win:not(.done)) .badge{opacity:1;transform:translateX(-50%) scale(1)}
+.reel.win{border-color:var(--gold);box-shadow:0 0 0 6px rgba(232,172,84,.18),0 0 60px rgba(232,172,84,.35)}
+.reel.win .name{color:var(--gold);text-shadow:0 0 18px rgba(232,172,84,.45)}
+.reel .name.pop{animation:pop .85s cubic-bezier(.18,1.25,.4,1) both}
+@keyframes pop{
+  0%{transform:scale(.5);opacity:0;filter:blur(8px)}
+  55%{transform:scale(1.1);opacity:1;filter:blur(0);text-shadow:0 0 46px rgba(246,217,168,.95),0 0 12px #fff}
+  100%{transform:scale(1);text-shadow:0 0 18px rgba(232,172,84,.45)}
+}
+.reel .hint{color:var(--mute);font-size:18px;font-weight:500}
+.actions{display:flex;justify-content:flex-start;align-items:center;align-content:flex-start;gap:12px;flex-wrap:wrap;min-height:62px}
+/* En anchos intermedios los 2 botones del ganador ocupan 2 filas: se reserva ese alto siempre,
+   para que el bloque (centrado con la ruleta) no se mueva al pasar de "Girar" a "Siguiente beca". */
+@media (min-width:861px) and (max-width:1320px){.actions{min-height:124px}}
+
+/* Sonido + ayuda de atajos */
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.mini{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:7px 11px;border-radius:10px;color:var(--mute)}
+.mini:hover:not(:disabled){color:var(--paper)}
+.mini[aria-pressed="true"],.mini[aria-expanded="true"]{color:var(--gold);border-color:rgba(232,172,84,.55)}
+.mini .x{display:none}
+.mini[aria-pressed="true"] .x{display:inline}
+.mini[aria-pressed="true"] .wave{display:none}
+.keys{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--mute)}
+.keys[hidden]{display:none}
+kbd{font-family:var(--f-mono);font-size:11px;font-weight:700;color:var(--paper);background:rgba(255,255,255,.1);border:1px solid var(--line);border-bottom-width:3px;border-radius:6px;padding:1px 6px;margin-right:6px}
+
+#confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7}
+
+/* Pantalla breve: paso a medias becas */
+.interlude{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;cursor:pointer;
+  background:radial-gradient(circle at 50% 45%,rgba(90,26,226,.94),rgba(18,6,56,.97) 72%)}
+.interlude[hidden]{display:none}
+.interlude .in{display:flex;flex-direction:column;align-items:center;gap:16px;max-width:900px;animation:inter .7s cubic-bezier(.2,1.2,.3,1) both}
+.interlude h2{margin:0;font-size:clamp(30px,5.6vw,84px);font-weight:800;line-height:1.05;text-wrap:balance}
+.interlude h2 em{font-style:normal;color:var(--gold)}
+.interlude p{margin:0;color:var(--mute);font-size:clamp(14px,1.6vw,22px)}
+.interlude small{font-family:var(--f-mono);color:var(--gold-soft);font-size:12px}
+@keyframes inter{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+
+/* ---------- Pantalla completa (proyector): todo cabe sin scroll ---------- */
+.stage:fullscreen{border-radius:0;width:100vw;height:100vh;overflow:hidden;justify-content:center;padding:clamp(14px,2.6vh,32px) clamp(24px,3.2vw,72px)}
+.stage:fullscreen .game{flex:1 1 auto;min-height:0}
+.stage:fullscreen .wheelbox{width:min(calc(100% - 64px),calc(100vh - 180px))}
+.stage:fullscreen .prize h2{font-size:clamp(28px,3.1vw,62px)}
+.stage:fullscreen .prize .by{font-size:clamp(15px,1.3vw,24px)}
+.stage:fullscreen .prize .count{font-size:clamp(14px,1vw,19px)}
+.stage:fullscreen .reel{--name-max:clamp(32px,3.4vw,64px)}
+.stage::backdrop{background:var(--ink)}
+
+/* ---------- Paneles ---------- */
+.panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px}
+.panel{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h3{margin:0;font-size:16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.panel h3 small{font-family:var(--f-mono);color:var(--gold);font-weight:500;font-size:13px}
+.panel p{margin:0;color:var(--mute);font-size:13px;line-height:1.5}
+textarea{width:100%;min-height:210px;resize:vertical;background:rgba(0,0,0,.25);color:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px;font-family:var(--f-mono);font-size:13px;line-height:1.55}
+textarea[readonly]{opacity:.6}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ex{font-size:12px;color:var(--warn)}
+
+/* Tabla de ganadores */
+.tbl{overflow:auto;max-height:420px;border-radius:12px;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;z-index:1;background:#2a1270;text-align:left;padding:9px 10px;font-size:11px;letter-spacing:.12em;color:var(--gold)}
+td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+td.n{font-family:var(--f-mono);color:var(--mute);width:38px;white-space:nowrap;overflow-wrap:normal}
+td.w{font-weight:600}
+td.w.pend{color:var(--mute);font-weight:400}
+tr.cur td{background:rgba(232,172,84,.12)}
+.tag{font-size:10px;font-weight:700;letter-spacing:.08em;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.tag.full{background:var(--gold);color:var(--ink)}
+.tag.half{border:1px solid var(--gold);color:var(--gold)}
+.ally{font-size:12px;color:var(--mute)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:calc(100vw - 32px);text-align:center;background:var(--paper);color:var(--ink);font-weight:600;padding:10px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:10}
+.confirm{background:rgba(255,138,122,.1);border:1px solid var(--warn);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+
+/* ---------- Tablet ---------- */
+@media (max-width:860px){
+  .game{grid-template-columns:1fr}
+  .panels{grid-template-columns:1fr}
+  .wheelbox{width:min(520px,calc(100% - 64px))}
+  .prize h2{font-size:clamp(24px,5vw,40px)}
+  .side{padding-bottom:0}
+  .reel{--name-max:clamp(26px,5.4vw,42px)}
+}
+
+/* ---------- Celular: ruleta arriba, info y botones grandes abajo ---------- */
+@media (max-width:600px){
+  body{padding:10px 10px 28px}
+  .wrap{gap:12px}
+  .stage{border-radius:20px;padding:16px 14px 20px;gap:14px}
+  .top{justify-content:center}
+  .top .isc{height:40px;max-width:60%}
+  .sponsors{justify-content:center;gap:8px}
+  .sponsors span{flex-basis:100%;text-align:center;font-size:10px;margin:0}
+  .chip{height:44px;padding:0 10px;border-radius:10px}
+  .chip img{height:30px}
+  .chip img.ins{height:38px}
+  .wheelbox{width:calc(100% - 50px)}
+  .pin{right:-36px;width:56px;height:51px}
+  .hub{padding:7px;border-width:4px}
+  .kind{font-size:11px;padding:5px 12px}
+  .prize .count{font-size:12px}
+  .reel{--name-max:clamp(22px,7vw,30px);--pad:14px;border-radius:18px}
+  .actions{flex-direction:column}
+  .actions button{width:100%;min-height:58px}
+  .go{font-size:19px;padding:14px 20px}
+  .ghost{font-size:15px}
+  .panel{padding:14px}
+}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

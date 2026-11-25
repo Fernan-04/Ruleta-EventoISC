@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sorteo de Becas ISC UTP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <section class="stage" id="stage">
+    <canvas id="confetti"></canvas>
+    <div class="top">
+      <img class="isc" src="assets/logo-isc-blanco.png" alt="Impact Startup Competition">
+      <div class="sponsors"><span>BECAS AUSPICIADAS POR</span>
+        <div class="chip"><img src="assets/logo-data-science.png" alt="Data Science AI First"></div>
+        <div class="chip"><img class="ins" src="assets/logo-inspirate-creator.png" alt="Inspírate Creator"></div>
+      </div>
+    </div>
+    <div class="game">
+      <div class="wheelbox" id="wheelbox">
+        <div class="pin" id="pin" aria-hidden="true">
+          <svg viewBox="0 0 66 60">
+            <defs>
+              <linearGradient id="pinFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fbe6c2"/>
+                <stop offset=".45" stop-color="#e8ac54"/>
+                <stop offset="1" stop-color="#a8681f"/>
+              </linearGradient>
+              <linearGradient id="pinShine" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </linearGradient>
+              <radialGradient id="pinRivet" cx=".35" cy=".3" r=".8">
+                <stop offset="0" stop-color="#3a1d8f"/>
+                <stop offset="1" stop-color="#120638"/>
+              </radialGradient>
+            </defs>
+            <!-- cuerpo: punta a la izquierda, base redondeada a la derecha -->
+            <path d="M3 30 L44 8.5 A22 22 0 0 1 44 51.5 Z" fill="url(#pinFill)" stroke="#5a1ae2" stroke-width="3" stroke-linejoin="round"/>
+            <!-- brillo superior -->
+            <path d="M10 27.5 L43 12 A18 18 0 0 1 59 24 Q40 22 10 27.5 Z" fill="url(#pinShine)"/>
+            <!-- remache -->
+            <circle cx="46" cy="30" r="10" fill="#fff" stroke="#fff3d9" stroke-width="2"/>
+            <path d="M46 23.2l1.9 4.3 4.6.4-3.5 3 1.1 4.5-4.1-2.4-4.1 2.4 1.1-4.5-3.5-3 4.6-.4z" fill="#f3bd62" stroke="#d9953b" stroke-width=".8" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <canvas id="wheel" width="1000" height="1000" aria-label="Ruleta de participantes"></canvas>
+        <div class="hub"><img src="assets/logo-isc-blanco.png" alt=""></div>
+      </div>
+      <div class="side" id="side">
+        <div class="prize" id="prize"></div>
+        <div class="reel-wrap">
+          <span class="badge" aria-hidden="true">🎉 ¡Ganador!</span>
+          <div class="reel" id="reel" aria-live="polite"><div class="name" id="name"></div></div>
+        </div>
+        <div class="actions" id="actions"></div>
+        <div class="meta">
+          <button class="mini" id="mute" aria-pressed="false" title="Silenciar (M)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 5 6 9H2v6h4l5 4V5z"/><path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/><path class="x" d="m22 9-6 6m0-6 6 6"/>
+            </svg><span>Sonido</span>
+          </button>
+          <button class="mini" id="help" aria-expanded="false" aria-controls="keys" title="Atajos de teclado">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>
+            </svg><span>Atajos</span>
+          </button>
+        </div>
+        <div class="keys" id="keys" hidden>
+          <span><kbd>Espacio</kbd>Girar</span>
+          <span><kbd>Enter</kbd>Siguiente beca</span>
+          <span><kbd>A</kbd>No está presente</span>
+          <span><kbd>F</kbd>Pantalla completa</span>
+          <span><kbd>M</kbd>Silenciar</span>
+        </div>
+      </div>
+    </div>
+    <div class="interlude" id="interlude" hidden>
+      <div class="in">
+        <span class="kind half">MEDIA BECA</span>
+        <h2>¡Ahora sorteamos las <em>MEDIAS BECAS</em>!</h2>
+        <p id="interludeSub"></p>
+        <small>Toca o pulsa Espacio para continuar</small>
+      </div>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+  </section>
+
+  <div class="panels">
+    <section class="panel">
+      <h3>Participantes <small id="pc"></small></h3>
+      <p>Pega la columna <b>Nombre completo</b> de la hoja de respuestas, un nombre por línea. Los nombres repetidos se cuentan una sola vez y quien ya ganó sale del sorteo.</p>
+      <textarea id="names" spellcheck="false" aria-label="Lista de participantes"></textarea>
+      <div class="row"><span class="ex" id="exnote">Lista de ejemplo: reemplázala por los registrados del QR.</span></div>
+      <div class="row">
+        <button id="fs">⛶ Pantalla completa</button>
+        <button id="reset">Reiniciar sorteo</button>
+      </div>
+      <div id="confirmBox"></div>
+    </section>
+    <section class="panel">
+      <h3>Ganadores <small id="wc"></small></h3>
+      <div class="tbl"><table><thead><tr><th>#</th><th>Beca</th><th>Ganador</th></tr></thead><tbody id="tb"></tbody></table></div>
+      <div class="row"><button id="copy">Copiar ganadores para Excel</button></div>
+    </section>
+  </div>
+</div>
+
+<script src="data/prizes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
